@@ -10,6 +10,7 @@
 #include <ngl/Random.h>
 #include <iostream>
 #include <ngl/pystring.h>
+#include <numeric>
 
 NGLScene::NGLScene(const std::string &_fname) : m_filename{_fname}
 {
@@ -49,7 +50,6 @@ void NGLScene::initializeGL()
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
-  //createPointCloud();
   std::cout.setf(std::ios::fixed, std::ios::floatfield);
   std::cout.setf(std::ios::showpoint);
   if(m_filename.size() ==0)
@@ -57,30 +57,72 @@ void NGLScene::initializeGL()
   else
     loadPointCloud(m_filename);
   //scalePointCloud({0.0001f,0.0001f,1.0f});
+
+  dumpX(10);
   calculateBoundingBox();
   calculateBoundingSphere();
+  std::cout<<"BBox Dimensions ";
   std::cout<<m_pointCloudBBox.width()<<' ';
   std::cout<<m_pointCloudBBox.height()<<' ';
-  std::cout<<m_pointCloudBBox.depth()<<' ';
+  std::cout<<m_pointCloudBBox.depth()<<'\n';
+  std::cout<<"Center "<<m_boundingBoxCenter<<'\n';
+  std::cout<<"Sphere "<<m_boundingSphereCenter<<"radius "<<m_boundingSphereRadius<<'\n';
+  // find max dimension
+  float sc = 1.0f /   std::max(m_pointCloudBBox.width(), std::max(m_pointCloudBBox.height(),m_pointCloudBBox.depth()));
+  std::cout<<"Scalar "<<sc<<'\n';
+  ngl::Vec3 scale(sc,sc,sc);
+  std::cout<<"Scale value "<<scale<<'\n';
+  scalePointCloud(scale);
+  dumpX(10);
+  calculateBoundingBox();
+  calculateBoundingSphere();
+  std::cout<<"BBox Dimensions ";
+  std::cout<<m_pointCloudBBox.width()<<' ';
+  std::cout<<m_pointCloudBBox.height()<<' ';
+  std::cout<<m_pointCloudBBox.depth()<<'\n';
+  std::cout<<"Center "<<m_boundingBoxCenter<<'\n';
+  std::cout<<"Sphere "<<m_boundingSphereCenter<<"radius "<<m_boundingSphereRadius<<'\n';
+  ngl::Vec3 translate(m_pointCloudBBox.maxX()-m_pointCloudBBox.minX(),
+                      m_pointCloudBBox.maxY()-m_pointCloudBBox.minY(),
+                      m_pointCloudBBox.maxZ()-m_pointCloudBBox.minZ());
+  translate=-translate;
+  std::cout<<"Translate "<<translate<<'\n';
 
-  createVAO();
+  translatePointCloud(translate);
+  dumpX(10);
   calculateCamera();
+  createVAO();
   ngl::VAOPrimitives::instance()->createSphere("sphere",m_boundingSphereRadius,20);
+  ngl::VAOPrimitives::instance()->createSphere("sphere1",1.0,20);
   shader->loadShader("PointCloudShader","shaders/PCVertex.glsl","shaders/PCFragment.glsl");
 }
 
-void NGLScene::scalePointCloud(const ngl::Vec3 &_s)
+void NGLScene::scalePointCloud(const ngl::Vec3 &_scale)
 {
   ngl::Mat3 scale;
-  scale.scale(_s.m_x,_s.m_y,_s.m_z);
+
+  scale.scale(_scale.m_x,_scale.m_y,_scale.m_z);
   for(auto &p : m_pointCloud)
+  {
+    //p=p*scale;
     p=scale*p;
+  }
 }
+
+void NGLScene::translatePointCloud(const ngl::Vec3 &_translate)
+{
+  for(auto &p : m_pointCloud)
+  {
+   p+=_translate;
+  }
+}
+
+
 
 void NGLScene::calculateBoundingBox()
 {
   // Calculate the center of the object.
-  m_boundingBoxCenter=0.0;
+  m_boundingBoxCenter.null();
 
 
   //m_boundingBoxCenter/=m_pointCloud.size();
@@ -92,12 +134,12 @@ void NGLScene::calculateBoundingBox()
   }
 
   // calculate the extents
-  ngl::Real maxX=m_boundingBoxCenter.m_x;
-  ngl::Real minX=m_boundingBoxCenter.m_x;
-  ngl::Real maxY=m_boundingBoxCenter.m_y;
-  ngl::Real minY=m_boundingBoxCenter.m_y;
-  ngl::Real maxZ=m_boundingBoxCenter.m_z;
-  ngl::Real minZ=m_boundingBoxCenter.m_z;
+  ngl::Real maxX=std::numeric_limits<float>::min();// m_boundingBoxCenter.m_x;
+  ngl::Real minX=std::numeric_limits<float>::max();//m_boundingBoxCenter.m_x;
+  ngl::Real maxY=std::numeric_limits<float>::min();// m_boundingBoxCenter.m_y;
+  ngl::Real minY=std::numeric_limits<float>::max();//m_boundingBoxCenter.m_y;
+  ngl::Real maxZ=std::numeric_limits<float>::min();// m_boundingBoxCenter.m_z;
+  ngl::Real minZ=std::numeric_limits<float>::max();//m_boundingBoxCenter.m_z;
 
 
 
@@ -195,7 +237,7 @@ void NGLScene::calculateBoundingSphere()
       dist2=dx*dx+dy*dy+dz*dz;
       if(dist2 > newRad2)
       {
-        ngl::msg->addWarning(fmt::format("something wrong here error margin {0}",dist2-newRad2));
+        //ngl::msg->addWarning(fmt::format("something wrong here error margin {0}",dist2-newRad2));
       }
       m_boundingSphereCenter=newCenter;
       rad=newRad;
@@ -292,18 +334,35 @@ void NGLScene::createVAO()
 void NGLScene::calculateCamera()
 {
 
-  ngl::Real maxDim = std::max( m_pointCloudBBox.maxX(), std::max(m_pointCloudBBox.maxY(), m_pointCloudBBox.maxZ()) );
-  std::cout<<"Cloud min max"<<m_pointCloudBBox.maxX()<<' '<<m_pointCloudBBox.maxY()<<' '<<m_pointCloudBBox.maxZ()<<'\n';
-  ngl::Real cameraZ = std::abs( maxDim / 4.0f * tanf( m_fov * 2.0f ) );
-  cameraZ*=2.25f;
-  ngl::Vec3 eye{m_boundingBoxCenter.m_x,m_boundingBoxCenter.m_y,cameraZ};
+//  ngl::Real maxDim = std::max( m_pointCloudBBox.maxX(), std::max(m_pointCloudBBox.maxY(), m_pointCloudBBox.maxZ()) );
+//  std::cout<<"Cloud min max "<<m_pointCloudBBox.maxX()<<' '<<m_pointCloudBBox.maxY()<<' '<<m_pointCloudBBox.maxZ()<<'\n';
+//  std::cout<<"Max Dim "<<maxDim<<'\n';
+//  ngl::Real cameraZ =std::abs( maxDim / 4.0f * tanf( m_fov * 2.0f ) );
 
-  ngl::Real cameraToFarEdge = ( m_pointCloudBBox.minZ() < 0.0f ) ? -m_pointCloudBBox.minZ() + cameraZ : cameraZ - m_pointCloudBBox.minZ();
+//  //cameraZ*=2.25f;
 
-  m_far = cameraToFarEdge * 10.0f;
-  m_view=ngl::lookAt(eye,m_boundingBoxCenter,{0.0f,1.0f,0.0f});
-  m_project=ngl::perspective(m_fov,float(m_win.width)/m_win.height,m_near,m_far);
-  std::cout<<"Max Dim "<<maxDim<<" CameraZ "<<cameraZ<<" eye "<<eye<<'\n';
+//  ngl::Vec3 eye{m_boundingBoxCenter.m_x,m_boundingBoxCenter.m_y,m_boundingBoxCenter.m_z*2.0f};
+
+//  ngl::Real cameraToFarEdge = ( m_pointCloudBBox.minZ() < 0.0f ) ? -m_pointCloudBBox.minZ() + cameraZ : cameraZ - m_pointCloudBBox.minZ();
+
+//  m_far = cameraToFarEdge/ 100.0f;
+  auto look=m_boundingBoxCenter;
+  auto eye=m_boundingBoxCenter;
+  eye.m_x-=1.0f;
+  eye.m_y-=1.0f;
+  eye.m_z-=1.0f;
+
+//  //look.m_z=m_boundingBoxCenter.m_z-10.0f;
+//  m_view=ngl::lookAt(eye,look,{0.0f,1.0f,0.0f});
+//  m_project=ngl::perspective(m_fov,float(m_win.width)/m_win.height,0.1f,50000.0f);//m_near,m_far);
+//  std::cout<<"Max Dim "<<maxDim<<" CameraZ "<<cameraZ<<"\n eye "<<eye<<"\n look "<<look<<'\n';
+//  std::cout<<"Persp near "<<m_near<<" far "<<m_far<<'\n';
+//  m_view=ngl::lookAt(eye,look,{0.0f,1.0f,0.0f});
+
+  m_view=ngl::lookAt({2,2,2},{0,0,0},{0.0f,1.0f,0.0f});
+  m_project=ngl::perspective(m_fov,float(m_win.width)/m_win.height,0.1f,500000.0f);//m_near,m_far);
+
+
 }
 
 bool NGLScene::savePointCloud(const std::string &_fname)
@@ -353,37 +412,9 @@ void NGLScene::createGridVAO()
   m_gridVAO->setNumIndices(verts.size());
 
   m_gridVAO->unbind();
-  ngl::msg->addMessage(fmt::format("Num of grid elements {0}",verts.size()));
+ // ngl::msg->addMessage(fmt::format("Num of grid elements {0}",verts.size()));
 }
 
-void NGLScene::createPointCloud()
-{
-  return;
-  m_pointCloud.clear();
-  m_pointCloud.resize(m_numPoints);
-  auto rng=ngl::Random::instance();
-  std::vector<ngl::Vec3> verts(40);
-    for(auto &v : m_pointCloud)
-    {
-      v=rng->getRandomPoint(m_cloudExtents.m_x,
-                            m_cloudExtents.m_y,
-                            m_cloudExtents.m_z);
-    }
-    m_pointCloudVAO=ngl::VAOFactory::createVAO(ngl::simpleVAO,GL_POINTS);
-    m_pointCloudVAO->bind();
-
-    // in this case we are going to set our data as the vertices above
-    m_pointCloudVAO->setData(ngl::MultiBufferVAO::VertexData(m_pointCloud.size()*sizeof(ngl::Vec3),m_pointCloud[0].m_x));
-    // now we set the attribute pointer to be 0 (as this matches vertIn in our shader)
-
-    m_pointCloudVAO->setVertexAttributePointer(0,3,GL_FLOAT,0,0);
-
-    m_pointCloudVAO->setNumIndices(m_pointCloud.size());
-
-   // now unbind
-    m_pointCloudVAO->unbind();
-
-}
 
 void NGLScene::paintGL()
 {
@@ -452,6 +483,7 @@ void NGLScene::paintGL()
 
     glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
     ngl::VAOPrimitives::instance()->draw("sphere");
+    ngl::VAOPrimitives::instance()->draw("sphere1");
   }
 }
 
@@ -473,16 +505,47 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   break;
   case Qt::Key_Down : m_gridY-=0.1f; break;
   case Qt::Key_Up : m_gridY+=0.1f; break;
-
+  case Qt::Key_G : m_showGrid^=true; break;
   case Qt::Key_B : m_showBBox^=true; break;
   case Qt::Key_S : m_showSphere^=true; break;
   case Qt::Key_V : savePointCloud("data/save.xyz"); break;
   case Qt::Key_Equal : m_pointSize++; break;
   case Qt::Key_Minus : m_pointSize--; break;
+  case Qt::Key_W : writePointCloud("debug.xyz"); break;
 
   default : break;
   }
   // finally update the GLWindow and re-draw
 
     update();
+}
+
+
+bool NGLScene::writePointCloud(const std::string &_fname) const
+{
+  ngl::msg->addMessage("Writing Point Cloud");
+  std::ofstream out(_fname.c_str());
+  if (out.is_open() != true)
+  {
+    ngl::msg->addError(fmt::format(" file {0} not found  ",_fname.c_str()));
+    return false;
+  }
+  for(auto &p :  m_pointCloud)
+  {
+    out<<p.m_x<<' '<<p.m_y<<' '<<p.m_z<<'\n';
+  }
+  out.close();
+  ngl::msg->addMessage("Done Writing Point Cloud");
+
+  return true;
+
+}
+
+
+void NGLScene::dumpX(size_t _x)
+{
+  std::cout<<"***************************\n";
+  for(size_t i=0; i<_x; ++i)
+    std::cout<<m_pointCloud[i]<<'\n';
+  std::cout<<"***************************\n";
 }

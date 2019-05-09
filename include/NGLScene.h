@@ -91,13 +91,16 @@ private:
     void calculateBoundingSphere();
     void calculateCamera();
     void createVAO();
-    void scalePointCloud(const ngl::Vec3 &_s);
+    bool writePointCloud(const std::string &_fname) const;
+    void scalePointCloud(const ngl::Vec3 &_scale);
+    void translatePointCloud(const ngl::Vec3 &_translate);
     bool savePointCloud(const std::string &_fname);
     bool loadPointCloud(const std::string &_name);
     ngl::BBox m_pointCloudBBox;
     ngl::Real m_boundingSphereRadius;
     ngl::Vec3 m_boundingSphereCenter;
     ngl::Vec3 m_boundingBoxCenter;
+    void dumpX(size_t _x);
 
     size_t m_numPoints=1<<10;
     ngl::Mat4 m_mouseGlobalTX;
