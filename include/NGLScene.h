@@ -99,6 +99,8 @@ private:
     ngl::BBox m_pointCloudBBox;
     ngl::Real m_boundingSphereRadius;
     ngl::Vec3 m_boundingSphereCenter;
+    ngl::Vec3 m_boundingBoxCenterD;
+
     ngl::Vec3 m_boundingBoxCenter;
     void dumpX(size_t _x);
 

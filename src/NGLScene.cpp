@@ -82,9 +82,9 @@ void NGLScene::initializeGL()
   std::cout<<m_pointCloudBBox.depth()<<'\n';
   std::cout<<"Center "<<m_boundingBoxCenter<<'\n';
   std::cout<<"Sphere "<<m_boundingSphereCenter<<"radius "<<m_boundingSphereRadius<<'\n';
-  ngl::Vec3 translate(m_pointCloudBBox.maxX()-m_pointCloudBBox.minX(),
-                      m_pointCloudBBox.maxY()-m_pointCloudBBox.minY(),
-                      m_pointCloudBBox.maxZ()-m_pointCloudBBox.minZ());
+  ngl::Vec3 translate(m_pointCloudBBox.maxX()/*-m_pointCloudBBox.minX()*/,
+                      m_pointCloudBBox.maxY()/*-m_pointCloudBBox.minY()*/,
+                      m_pointCloudBBox.maxZ()/*-m_pointCloudBBox.minZ()*/);
   translate=-translate;
   std::cout<<"Translate "<<translate<<'\n';
 
@@ -154,6 +154,11 @@ void NGLScene::calculateBoundingBox()
   }
 
   m_pointCloudBBox.setCenter(m_boundingBoxCenter);
+  std::cout<<"Calc BBox Center"<<m_boundingBoxCenter<<'\n';
+  m_boundingBoxCenterD.m_x=maxX-minX;
+  m_boundingBoxCenterD.m_y=maxY-minY;
+  m_boundingBoxCenterD.m_z=maxZ-minZ;
+  std::cout<<"Center from Dim "<<m_boundingBoxCenterD<<'\n';
   m_pointCloudBBox.setExtents(minX,maxX,minY,maxY,minZ,maxZ);
   m_pointCloudBBox.recalculate();
 }
@@ -346,11 +351,11 @@ void NGLScene::calculateCamera()
 //  ngl::Real cameraToFarEdge = ( m_pointCloudBBox.minZ() < 0.0f ) ? -m_pointCloudBBox.minZ() + cameraZ : cameraZ - m_pointCloudBBox.minZ();
 
 //  m_far = cameraToFarEdge/ 100.0f;
-  auto look=m_boundingBoxCenter;
-  auto eye=m_boundingBoxCenter;
-  eye.m_x-=1.0f;
-  eye.m_y-=1.0f;
-  eye.m_z-=1.0f;
+//  auto look=m_boundingBoxCenter;
+//  auto eye=m_boundingBoxCenter;
+//  eye.m_x-=1.0f;
+//  eye.m_y-=1.0f;
+//  eye.m_z-=1.0f;
 
 //  //look.m_z=m_boundingBoxCenter.m_z-10.0f;
 //  m_view=ngl::lookAt(eye,look,{0.0f,1.0f,0.0f});
@@ -359,7 +364,7 @@ void NGLScene::calculateCamera()
 //  std::cout<<"Persp near "<<m_near<<" far "<<m_far<<'\n';
 //  m_view=ngl::lookAt(eye,look,{0.0f,1.0f,0.0f});
 
-  m_view=ngl::lookAt({2,2,2},{0,0,0},{0.0f,1.0f,0.0f});
+  m_view=ngl::lookAt({0,0,2},m_boundingBoxCenterD,{0.0f,1.0f,0.0f});
   m_project=ngl::perspective(m_fov,float(m_win.width)/m_win.height,0.1f,500000.0f);//m_near,m_far);
 
 
