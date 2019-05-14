@@ -3,12 +3,18 @@
 #include <fstream>
 #include <ngl/pystring.h>
 #include <numeric>
-
+#include <charconv>
 
 PointCloud::PointCloud(const std::string_view &_fname)
 {
   load(_fname);
 }
+
+size_t PointCloud::size() const noexcept
+{
+  return m_points.size();
+}
+
 
 
 bool PointCloud::load(const std::string_view &_name)
@@ -35,10 +41,12 @@ bool PointCloud::load(const std::string_view &_name)
       // should have x,y,z
       if(tokens.size() >=3)
       {
-        float x=std::stof(tokens[0]);
-        float y=std::stof(tokens[1]);
-        float z=std::stof(tokens[2]);
-        m_points.push_back({x,y,z});
+        std::setlocale(LC_ALL, "C");
+        double x=std::stod(tokens[0]);
+        double y=std::stod(tokens[1]);
+        double z=std::stod(tokens[2]);
+
+        m_points.push_back(ngl::Vec3(x,y,z));
 //        if(tokens.size()==6)
 //        {
 //          float nx=std::stof(tokens[3]);
@@ -65,3 +73,9 @@ bool PointCloud::load(const std::string_view &_name)
 
 
 }
+
+std::vector<ngl::Vec3> &PointCloud::points()
+{
+  return  m_points;
+}
+

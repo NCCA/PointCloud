@@ -14,7 +14,8 @@ class PointCloud
     PointCloud & operator=(PointCloud &&)=default;
     PointCloud(const std::string_view &_fname);
     bool load(const std::string_view &_name);
-
+    size_t size() const noexcept;
+    std::vector<ngl::Vec3> &points() ;
   private :
     std::vector<ngl::Vec3> m_points;
 };
