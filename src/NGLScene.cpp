@@ -11,6 +11,8 @@
 #include <iostream>
 #include <ngl/pystring.h>
 #include <numeric>
+#include <unordered_set>
+#include <algorithm>
 
 NGLScene::NGLScene(const std::string &_fname) : m_filename{_fname}
 {
@@ -32,6 +34,43 @@ void NGLScene::resizeGL(int _w , int _h)
   m_win.height = static_cast<int>( _h * devicePixelRatio() );
 }
 
+template<>
+    struct std::hash<ngl::Vec3>
+    {
+      int
+      operator()(const ngl::Vec3 & obj) const
+      {
+        //return std::hash<int>()(
+        //      obj.m_x+obj.m_y+obj.m_z);
+        int hash=  int32_t(obj.m_x * 73856093) ^ int32_t(obj.m_y * 19349663) ^ int32_t(obj.m_z * 83492791);
+        return hash;
+      }
+    };
+
+    template< typename tPair >
+    struct second_t {
+        typename tPair::second_type operator()( const tPair& p ) const { return     p.second; }
+    };
+
+    template< typename tMap >
+    second_t< typename tMap::value_type > second( const tMap& m ) { return second_t<     typename tMap::value_type >(); }
+
+
+void NGLScene::removeDuplicates()
+{
+//  std::unordered_set<ngl::Vec3> set;
+//  for( auto d : m_pointCloud )
+//    set.insert( d );
+//  m_pointCloud.assign( set.begin(), set.end() );
+  std::unordered_map<int,ngl::Vec3> set;
+
+  for( auto d : m_pointCloud )
+    set[std::hash<ngl::Vec3>{}(d)]=d;
+  m_pointCloud.clear();
+  std::transform( std::begin(set), std::end(set), std::back_inserter( m_pointCloud ), second(set) );
+
+
+}
 
 void NGLScene::initializeGL()
 {
@@ -90,6 +129,9 @@ void NGLScene::initializeGL()
 
   translatePointCloud(translate);
   dumpX(10);
+  std::cout<<"Before Removed Dup "<<m_pointCloud.size()<<'\n';
+  removeDuplicates();
+  std::cout<<"Removed Dup "<<m_pointCloud.size()<<'\n';
   calculateCamera();
   createVAO();
   ngl::VAOPrimitives::instance()->createSphere("sphere",m_boundingSphereRadius,20);
@@ -303,9 +345,9 @@ bool NGLScene::loadPointCloud(const std::string &_name)
 
   in.close();
 
-  std::sort(std::begin(m_pointCloud),std::end(m_pointCloud),
-            [](const ngl::Vec3 &a,const ngl::Vec3 &b) {return a.m_x > b.m_x; }
-            );
+//  std::sort(std::begin(m_pointCloud),std::end(m_pointCloud),
+//            [](const ngl::Vec3 &a,const ngl::Vec3 &b) {return a.m_x > b.m_x; }
+//            );
   ngl::msg->addMessage(fmt::format("Point Cloud Loaded {0} points",m_pointCloud.size()));
   return true;
 

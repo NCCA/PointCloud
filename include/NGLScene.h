@@ -49,6 +49,7 @@ class NGLScene : public QOpenGLWindow
     void resizeGL(int _w, int _h) override;
 
 private:
+    void removeDuplicates();
 
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief Qt Event called when a key is pressed

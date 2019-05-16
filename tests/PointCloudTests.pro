@@ -13,9 +13,13 @@ MOC_DIR=moc
 CONFIG-=app_bundle
 # Auto include all .cpp files in the project src directory (can specifiy individually if required)
 SOURCES+= $$PWD/main.cpp \
-          $$PWD/../src/PointCloud.cpp
+          $$PWD/PointCloudTests.cpp \
+          $$PWD/BoundingBoxTests.cpp \
+          $$PWD/../src/PointCloud.cpp \
+          $$PWD/../src/BoundingBox.cpp
 
-HEADERS += $$PWD/../include/PointCloud.h
+HEADERS += $$PWD/../include/PointCloud.h \
+           $$PWD/../include/BoundingBox.h
 OTHER_FILES+=$$PWD/files/*
 
 # same for the .h files
