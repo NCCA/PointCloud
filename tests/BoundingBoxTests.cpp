@@ -64,5 +64,22 @@ TEST(BoundingBox,center)
   EXPECT_FLOAT_EQ(c.m_y,max/2.0f);
   EXPECT_FLOAT_EQ(c.m_z,max/2.0f);
 
+  b.set({-2.0f,0.0023f,-100.043f},{{35.0034f,30.0023f,20.043f}});
+  c=b.center();
+  EXPECT_FLOAT_EQ(c.m_x,16.5017f);
+  EXPECT_FLOAT_EQ(c.m_y,15.0023f);
+  EXPECT_FLOAT_EQ(c.m_z,-40.0f);
+}
+
+TEST(BoundingBox,pointInBB)
+{
+  BoundingBox b({-1.0f,-1.0f,-1.0f},{1.0f,1.0f,1.0f});
+  EXPECT_TRUE(b.inside({0.0f,0.0f,0.0f}));
+  EXPECT_TRUE(b.inside({0.1f,0.0f,-0.2f}));
+  EXPECT_FALSE(b.inside(1.2f,0.0f,-0.2f));
+  EXPECT_FALSE(b.inside({99.2f,0.0f,0.2f}));
 
 }
+
+
+

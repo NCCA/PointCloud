@@ -20,6 +20,19 @@ void BoundingBox::set(const ngl::Vec3 &_min, const ngl::Vec3 _max )
   m_max=_max;
 }
 
+bool BoundingBox::inside(const ngl::Vec3 &_p) const noexcept
+{
+  return  (_p.m_x >= m_min.m_x && _p.m_x <= m_max.m_x &&
+           _p.m_y >= m_min.m_y && _p.m_y <= m_max.m_y &&
+           _p.m_z >= m_min.m_z && _p.m_z <= m_max.m_z
+           );
+}
+bool BoundingBox::inside(ngl::Real _x, ngl::Real _y, ngl::Real _z) const noexcept
+{
+  return  (_x >= m_min.m_x && _x <= m_max.m_x &&
+           _y >= m_min.m_y && _y <= m_max.m_y &&
+           _z >= m_min.m_z && _z <= m_max.m_z
+           );}
 
 BoundingBox::BoundingBox(const std::vector<ngl::Vec3> &_p ) noexcept
 {
