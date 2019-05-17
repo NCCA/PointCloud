@@ -82,4 +82,21 @@ TEST(BoundingBox,pointInBB)
 }
 
 
+TEST(BoundingBox,intercept)
+{
+  BoundingBox b({-1.0f,-1.0f,-1.0f},{1.0f,1.0f,1.0f});
+  // ray through center in X
+  EXPECT_TRUE(b.intersect({-10.0f,0.0f,0.0f},{10.0f,0.0f,0.0f}));
+  // ray through center in Y
+  EXPECT_TRUE(b.intersect({0.0f,10.0f,0.0f},{0.0f,-1.0f,0.0f}));
+  // ray through center in Z
+  EXPECT_TRUE(b.intersect({0.0f,0.0f,2.0f},{0.0f,0.0f,-.5f}));
+  // ray from corner to corner
+  EXPECT_TRUE(b.intersect(b.min(),(b.max()-b.min())));
 
+  // ray start outside and down
+  EXPECT_FALSE(b.intersect({2.0f,2.0f,2.0f},{0.0f,-1.0f,0.0f}));
+  // ray start outside and up
+  EXPECT_FALSE(b.intersect({2.0f,2.0f,2.0f},{0.0f,1.0f,0.0f}));
+
+}

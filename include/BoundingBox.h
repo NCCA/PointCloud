@@ -14,6 +14,8 @@ class BoundingBox
     void set(const ngl::Vec3 &_min, const ngl::Vec3 _max );
     bool inside(const ngl::Vec3 &_p) const noexcept;
     bool inside(ngl::Real _x, ngl::Real _y, ngl::Real _z) const noexcept;
+    bool intersect(const ngl::Vec3 &_rpos,const ngl::Vec3 &_rdir) const noexcept;
+
     BoundingBox(const BoundingBox &)=default;
     BoundingBox( BoundingBox &&)=default;
     BoundingBox & operator=(const BoundingBox &)=default;
