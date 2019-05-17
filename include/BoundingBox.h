@@ -12,6 +12,7 @@ class BoundingBox
     ngl::Vec3 center() const;
     void set(ngl::Real _minX, ngl::Real _minY, ngl::Real _minZ, ngl::Real _maxX, ngl::Real _maxY,ngl::Real _maxZ );
     void set(const ngl::Vec3 &_min, const ngl::Vec3 _max );
+    void set(const std::vector<ngl::Vec3> &_p) noexcept;
     bool inside(const ngl::Vec3 &_p) const noexcept;
     bool inside(ngl::Real _x, ngl::Real _y, ngl::Real _z) const noexcept;
     bool intersect(const ngl::Vec3 &_rpos,const ngl::Vec3 &_rdir) const noexcept;
@@ -25,6 +26,8 @@ class BoundingBox
     ngl::Vec3 max() const noexcept;
 
   private :
+    void calcExtents(const std::vector<ngl::Vec3> &_p);
+
     ngl::Vec3 m_min;
     ngl::Vec3 m_max;
 

@@ -119,7 +119,7 @@ BoundingBox &PointCloud::getBBox() noexcept
 
 void PointCloud::calculateBoundingBox() noexcept
 {
-
+  m_bbox.set(m_points);
 }
 
 

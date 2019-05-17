@@ -47,6 +47,22 @@ TEST(BoundingBox,pointsCtor)
   EXPECT_EQ(b.center(),ngl::Vec3::zero());
 }
 
+TEST(BoundingBox,setFromPoints)
+{
+  std::vector<ngl::Vec3> points={
+    {-10.0f,-10.0f,-10.0f},
+    {0.0f,0.0f,0.0f},
+    {1.0f,-1.0f,-1.0f},
+    {10.0f,10.0f,10.0f}
+  };
+
+  BoundingBox b;
+  b.set(points);
+  EXPECT_EQ(b.min(),ngl::Vec3(-10.0f,-10.0f,-10.0f));
+  EXPECT_EQ(b.max(),ngl::Vec3(10.0f,10.0f,10.0f));
+  EXPECT_EQ(b.center(),ngl::Vec3::zero());
+}
+
 
 TEST(BoundingBox,center)
 {
