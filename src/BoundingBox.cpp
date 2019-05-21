@@ -76,6 +76,27 @@ ngl::Vec3  BoundingBox::max() const noexcept
   return m_max;
 }
 
+ngl::Real BoundingBox::width() const noexcept
+{
+  return m_max.m_x-m_min.m_x;
+}
+ngl::Real BoundingBox::height() const noexcept
+{
+  return m_max.m_y-m_min.m_y;
+
+}
+ngl::Real BoundingBox::depth() const noexcept
+{
+  return m_max.m_z-m_min.m_z;
+
+}
+// vector combining width, height and depth
+ngl::Vec3 BoundingBox::size() const noexcept
+{
+  return m_max-m_min;
+
+}
+
 // based on
 // https://tavianator.com/fast-branchless-raybounding-box-intersections/
 //

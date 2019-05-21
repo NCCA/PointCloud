@@ -63,6 +63,23 @@ TEST(BoundingBox,setFromPoints)
   EXPECT_EQ(b.center(),ngl::Vec3::zero());
 }
 
+TEST(BoundingBox,dimensions)
+{
+  std::vector<ngl::Vec3> points={
+    {-10.0f,-10.0f,-10.0f},
+    {0.0f,0.0f,0.0f},
+    {1.0f,-1.0f,-1.0f},
+    {10.0f,10.0f,10.0f}
+  };
+
+  BoundingBox b;
+  b.set(points);
+  EXPECT_FLOAT_EQ(b.width(),20.0f);
+  EXPECT_FLOAT_EQ(b.height(),20.0f);
+  EXPECT_FLOAT_EQ(b.depth(),20.0f);
+
+}
+
 
 TEST(BoundingBox,center)
 {

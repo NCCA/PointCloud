@@ -4,6 +4,7 @@
 #include <ngl/Mat4.h>
 #include <ngl/Obj.h>
 #include <ngl/MultiBufferVAO.h>
+#include "PointCloud.h"
 
 
 #include "WindowParams.h"
@@ -85,45 +86,38 @@ private:
     /// position for our model
     ngl::Vec3 m_modelPos;
     std::unique_ptr<ngl::AbstractVAO> m_pointCloudVAO;
-    std::unique_ptr<ngl::AbstractVAO> m_gridVAO;
-    void createPointCloud();
-    void createGridVAO();
-    void calculateBoundingBox();
-    void calculateBoundingSphere();
+//    std::unique_ptr<ngl::AbstractVAO> m_gridVAO;
+//    void createPointCloud();
+//    void createGridVAO();
+//    void calculateBoundingBox();
+//    void calculateBoundingSphere();
     void calculateCamera();
-    void createVAO();
-    bool writePointCloud(const std::string &_fname) const;
-    void scalePointCloud(const ngl::Vec3 &_scale);
-    void translatePointCloud(const ngl::Vec3 &_translate);
-    bool savePointCloud(const std::string &_fname);
-    bool loadPointCloud(const std::string &_name);
-    ngl::BBox m_pointCloudBBox;
-    ngl::Real m_boundingSphereRadius;
-    ngl::Vec3 m_boundingSphereCenter;
-    ngl::Vec3 m_boundingBoxCenterD;
+      void createVAO();
+//    bool writePointCloud(const std::string &_fname) const;
+//    void scalePointCloud(const ngl::Vec3 &_scale);
+//    void translatePointCloud(const ngl::Vec3 &_translate);
+//    bool savePointCloud(const std::string &_fname);
+//    bool loadPointCloud(const std::string &_name);
 
-    ngl::Vec3 m_boundingBoxCenter;
-    void dumpX(size_t _x);
-
-    size_t m_numPoints=1<<10;
     ngl::Mat4 m_mouseGlobalTX;
     ngl::Mat4 m_view;
     ngl::Mat4 m_project;
     ngl::Real m_fov=45.0f;
     ngl::Real m_near=0.1f;
     ngl::Real m_far=1000.0f;
-    ngl::Real m_gridStepX=0.5f;
-    ngl::Real m_gridStepY=0.5f;
+//    ngl::Real m_gridStepX=0.5f;
+//    ngl::Real m_gridStepY=0.5f;
 
-    ngl::Real m_gridY=-1.0f;
-    std::vector<ngl::Vec3> m_pointCloud;
-    std::vector<ngl::Vec3> m_normalCloud;
-    ngl::Vec3 m_cloudExtents{100.0f,100.0f,100.0f};
+//    ngl::Real m_gridY=-1.0f;
+//    std::vector<ngl::Vec3> m_pointCloud;
+//    std::vector<ngl::Vec3> m_normalCloud;
+//    ngl::Vec3 m_cloudExtents{100.0f,100.0f,100.0f};
     bool m_showBBox=true;
     bool m_showSphere=false;
     bool m_showGrid=true;
     int m_pointSize=1;
     std::string m_filename;
+    PointCloud m_pointCloud;
 };
 
 

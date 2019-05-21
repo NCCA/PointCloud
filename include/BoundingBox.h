@@ -24,6 +24,11 @@ class BoundingBox
     ~BoundingBox()=default;
     ngl::Vec3 min() const noexcept;
     ngl::Vec3 max() const noexcept;
+    ngl::Real width() const noexcept;
+    ngl::Real height() const noexcept;
+    ngl::Real depth() const noexcept;
+    // vector combining width, height and depth
+    ngl::Vec3 size() const noexcept;
 
   private :
     void calcExtents(const std::vector<ngl::Vec3> &_p);

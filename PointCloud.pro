@@ -19,11 +19,13 @@ CONFIG-=app_bundle
 SOURCES+= $$PWD/src/main.cpp \
           $$PWD/src/NGLScene.cpp \
           $$PWD/src/PointCloud.cpp \
+          $$PWD/src/BoundingBox.cpp \
           $$PWD/src/NGLSceneMouseControls.cpp
 
 # same for the .h files
 HEADERS+= $$PWD/include/NGLScene.h \
           $$PWD/include/PointCloud.h \
+          $$PWD/include/BoundingBox.h \
           $$PWD/include/WindowParams.h
 
 # and add the include dir into the search path for Qt and make

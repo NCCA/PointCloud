@@ -64,6 +64,8 @@ bool PointCloud::load(const std::string_view &_name, bool _sort) noexcept
               );
   }
   ngl::msg->addMessage(fmt::format("Point Cloud Loaded {0} points",m_points.size()));
+  calculateBoundingBox();
+  calculateBoundingSphere();
   return true;
 
 
@@ -127,5 +129,107 @@ void PointCloud::addPoint(const ngl::Vec3 &_p) noexcept
 {
   m_points.push_back(_p);
 }
+
+void PointCloud::calculateBoundingSphere() noexcept
+{
+  if(m_points.size() == 0)
+    return;
+  // find minimal and maximal extents and indexs into
+  // into vert array
+  size_t minXI=0; size_t minYI=0; size_t minZI=0;
+  size_t maxXI=0; size_t maxYI=0; size_t maxZI=0;
+  ngl::Real minX=m_points[0].m_x; ngl::Real maxX=m_points[0].m_x;
+  ngl::Real minY=m_points[0].m_y; ngl::Real maxY=m_points[0].m_y;
+  ngl::Real minZ=m_points[0].m_z; ngl::Real maxZ=m_points[0].m_z;
+
+  for(size_t i=0; i<m_points.size(); ++i)
+  {
+    if(m_points[i].m_x < minX) { minXI=i; minX=m_points[i].m_x; }
+    if(m_points[i].m_x > maxX) { maxXI=i; maxX=m_points[i].m_x; }
+    if(m_points[i].m_y < minY) { minYI=i; minY=m_points[i].m_y; }
+    if(m_points[i].m_y > maxY) { maxYI=i; maxY=m_points[i].m_y; }
+    if(m_points[i].m_z < minZ) { minZI=i; minZ=m_points[i].m_z; }
+    if(m_points[i].m_z > maxZ) { maxZI=i; maxZ=m_points[i].m_z; }
+  }
+  // now we find maximally seperated points from the 3 pairs
+  // we will use this to initialise the spheres
+  ngl::Real dx=m_points[minXI].m_x-m_points[maxXI].m_x;
+  ngl::Real dy=m_points[minXI].m_y-m_points[maxXI].m_y;
+  ngl::Real dz=m_points[minXI].m_z-m_points[maxXI].m_z;
+  ngl::Real diam2x=dx*dx+dy*dy+dz*dz;
+
+  dx=m_points[minYI].m_x-m_points[maxYI].m_x;
+  dy=m_points[minYI].m_y-m_points[maxYI].m_y;
+  dz=m_points[minYI].m_z-m_points[maxYI].m_z;
+  ngl::Real diam2y=dx*dx+dy*dy+dz*dz;
+
+  dx=m_points[minZI].m_x-m_points[maxZI].m_x;
+  dy=m_points[minZI].m_y-m_points[maxZI].m_y;
+  dz=m_points[minZI].m_z-m_points[maxZI].m_z;
+  ngl::Real diam2z=dx*dx+dy*dy+dz*dz;
+
+  ngl::Real diamTwo=diam2x;
+  size_t p1i=minXI;
+  size_t p2i=maxXI;
+  if(diam2y>diamTwo){ diamTwo=diam2y; p1i=minYI; p2i=maxYI;}
+  if(diam2z>diamTwo){ diamTwo=diam2z; p1i=minZI; p2i=maxZI;}
+  // now we can get the center of the sphere as the average
+  // of the two points
+  m_boundingSphereCenter=(m_points[p1i]+m_points[p2i])/2.0;
+  // now calculate radius and radius^2 of the initial sphere
+  ngl::Real radTwo=diamTwo/4.0f;
+  ngl::Real rad=sqrt(radTwo);
+  // now check and adjust for outlying points
+  ngl::Vec3 newCenter;
+  ngl::Real newRad2;
+  ngl::Real newRad;
+  ngl::Real dist2;
+  ngl::Real dist;
+  ngl::Real delta;
+
+  for (auto v : m_points)
+  {
+    dx=v.m_x-m_boundingSphereCenter.m_x;
+    dy=v.m_y-m_boundingSphereCenter.m_y;
+    dz=v.m_z-m_boundingSphereCenter.m_z;
+    // distance squared of old center to current point
+    dist2=dx*dx+dy*dy+dz*dz;
+    // need to update the sphere if this point is outside the radius
+    if(dist2 > radTwo)
+    {
+      dist=sqrt(dist2);
+      newRad=(rad+dist)/2.0f;
+      newRad2=newRad*newRad;
+      delta=dist-newRad;
+      // now compute new center using the weights above
+      newCenter.m_x=(newRad*m_boundingSphereCenter.m_x+delta*v.m_x)/dist;
+      newCenter.m_y=(newRad*m_boundingSphereCenter.m_y+delta*v.m_y)/dist;
+      newCenter.m_z=(newRad*m_boundingSphereCenter.m_z+delta*v.m_z)/dist;
+      // now test to see if we have a fit
+      dx=v.m_x-newCenter.m_x;
+      dy=v.m_y-newCenter.m_y;
+      dz=v.m_z-newCenter.m_z;
+      dist2=dx*dx+dy*dy+dz*dz;
+      if(dist2 > newRad2)
+      {
+        //ngl::msg->addWarning(fmt::format("something wrong here error margin {0}",dist2-newRad2));
+      }
+      m_boundingSphereCenter=newCenter;
+      rad=newRad;
+      radTwo=rad*rad;
+    } // end if dist2>rad2
+    m_boundingSphereRadius=rad;
+}
+}
+
+ngl::Real PointCloud::radius() const noexcept
+{
+  return m_boundingSphereRadius;
+}
+ngl::Vec3 PointCloud::sphereCenter() const noexcept
+{
+  return m_boundingSphereCenter;
+}
+
 
 
