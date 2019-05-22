@@ -66,6 +66,8 @@ bool PointCloud::load(const std::string_view &_name, bool _sort) noexcept
   ngl::msg->addMessage(fmt::format("Point Cloud Loaded {0} points",m_points.size()));
   calculateBoundingBox();
   calculateBoundingSphere();
+  std::cout<<"Bounding Box min "<<m_bbox.min()<<" Max "<<m_bbox.max()<<"\n";
+  std::cout<<"Bounding Sphere Center "<<m_boundingSphereCenter<<" radius "<<m_boundingSphereRadius<<'\n';
   return true;
 
 
@@ -226,9 +228,10 @@ void PointCloud::normalize()
 {
   calculateBoundingBox();
   auto delta=m_bbox.max()-m_bbox.min();
-  ngl::Real max=std::max(delta.m_x,std::max(delta.m_y,delta.m_z));
 
-  ngl::Vec3 scale(1.0f/max);
+  ngl::Real max=1.0f/std::max((delta.m_x),std::max((delta.m_y),(delta.m_z)));
+  ngl::Vec3 scale(max);
+  std::cout<<"Delta "<<delta<<" max "<<max<<" scale "<<scale<<'\n';
   for(auto &p : m_points)
   {
     p=p*scale;
@@ -240,13 +243,16 @@ void PointCloud::normalize()
 void PointCloud::unitize()
 {
   calculateBoundingBox();
-  auto delta=m_bbox.min()-m_bbox.max();
-  ngl::Real max=std::max(std::abs(delta.m_x),std::max(std::abs(delta.m_y),std::abs(delta.m_z)));
-//  std::cout.setf(std::ios::fixed, std::ios::floatfield);
-//  std::cout.setf(std::ios::showpoint);
-//  std::cout<<"max "<<max<<" Delta "<<delta<<'\n';
+  // float scale = 1.0 / max(mx.x - mn.x, max(mx.y - mn.y, mx.z -mn.z));
+
+  auto delta=m_bbox.max()-m_bbox.min();
+  ngl::Real max=std::max( delta.m_x,std::max(delta.m_y,delta.m_z));
+  std::cout.setf(std::ios::fixed, std::ios::floatfield);
+  std::cout.setf(std::ios::showpoint);
   ngl::Vec3 scale(1.0f/max);
-//  std::cout<<"Scale is "<<scale<<'\n';
+ // scale.clamp(0.001f,1.0f);
+  std::cout<<"Delta "<<delta<<" max "<<max<< " scale "<<scale<<'\n';
+
   for(auto &p : m_points)
   {
   //  std::cout<<p<<" -> ";
