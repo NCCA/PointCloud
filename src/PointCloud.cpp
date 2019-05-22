@@ -219,8 +219,55 @@ void PointCloud::calculateBoundingSphere() noexcept
       radTwo=rad*rad;
     } // end if dist2>rad2
     m_boundingSphereRadius=rad;
+  }
 }
+
+void PointCloud::normalize()
+{
+  calculateBoundingBox();
+  auto delta=m_bbox.max()-m_bbox.min();
+  ngl::Real max=std::max(delta.m_x,std::max(delta.m_y,delta.m_z));
+
+  ngl::Vec3 scale(1.0f/max);
+  for(auto &p : m_points)
+  {
+    p=p*scale;
+  }
+  calculateBoundingBox();
+  calculateBoundingSphere();
 }
+
+void PointCloud::unitize()
+{
+  calculateBoundingBox();
+  auto delta=m_bbox.min()-m_bbox.max();
+  ngl::Real max=std::max(std::abs(delta.m_x),std::max(std::abs(delta.m_y),std::abs(delta.m_z)));
+//  std::cout.setf(std::ios::fixed, std::ios::floatfield);
+//  std::cout.setf(std::ios::showpoint);
+//  std::cout<<"max "<<max<<" Delta "<<delta<<'\n';
+  ngl::Vec3 scale(1.0f/max);
+//  std::cout<<"Scale is "<<scale<<'\n';
+  for(auto &p : m_points)
+  {
+  //  std::cout<<p<<" -> ";
+    p=p*scale;
+    //std::cout<<p<<'\n';
+  }
+  calculateBoundingBox();
+  calculateBoundingSphere();
+  ngl::Vec3 center=-m_bbox.center();
+  //std::cout<<"Center "<<center<<'\n';
+  for(auto &p : m_points)
+  {
+    p+=center;
+    //std::cout<<p<<'\n';
+  }
+  calculateBoundingBox();
+  calculateBoundingSphere();
+
+}
+
+
 
 ngl::Real PointCloud::radius() const noexcept
 {

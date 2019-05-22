@@ -131,5 +131,5 @@ TEST(BoundingBox,intercept)
   EXPECT_FALSE(b.intersect({2.0f,2.0f,2.0f},{0.0f,-1.0f,0.0f}));
   // ray start outside and up
   EXPECT_FALSE(b.intersect({2.0f,2.0f,2.0f},{0.0f,1.0f,0.0f}));
-
 }
+

@@ -26,6 +26,10 @@ class PointCloud
     std::vector<ngl::Vec3> &points() noexcept;
     void addPoint(const ngl::Vec3 &_p) noexcept;
     BoundingBox &getBBox() noexcept;
+    // scale all points to 1 unit size
+    void normalize();
+    // canonicalize (scale to fit in NDC / Canonical volume -1 -> +1 in all directions)
+    void unitize();
   private :
     std::vector<ngl::Vec3> m_points;
     BoundingBox m_bbox;

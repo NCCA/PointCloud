@@ -83,19 +83,17 @@ void NGLScene::initializeGL()
     m_pointCloud.load(m_filename);
 
   shader->loadShader("PointCloudShader","shaders/PCVertex.glsl","shaders/PCFragment.glsl");
+  m_pointCloud.unitize();
+  //m_pointCloud.normalize();
   createVAO();
  // m_view=ngl::lookAt(m_pointCloud.sphereCenter(),m_pointCloud.getBBox().center(),{0,1,0});
  // m_project=ngl::perspective(45.0f,float(width())/height(),0.1f,1000.0f);
   std::cout<<"Bounding Box Center "<<m_pointCloud.getBBox().center()<<'\n';
   std::cout<<"Bounding Sphere Center "<<m_pointCloud.sphereCenter()<<'\n';
   calculateCamera();
+  ngl::VAOPrimitives::instance()->createSphere("bsphere",m_pointCloud.radius(),20);
 
 }
-
-
-
-
-
 
 
 
@@ -127,12 +125,12 @@ void NGLScene::calculateCamera()
   // get the max side of the bounding box (fits to width OR height as needed )
   auto maxDim = std::max( size.m_x, std::max(size.m_y, size.m_z ));
   auto fov = ngl::radians(m_fov);
-  ngl::Real cameraZ = std::abs( maxDim / 4.0f * tanf( fov * 2.0f ) );
+  ngl::Real cameraZ=maxDim;
 
   cameraZ *= 1.25f; // zoom out a little so that objects don't fill the screen
 
-  ngl::Vec3 eye=center;
-  eye.m_z=bbox.center().m_z+ m_pointCloud.radius();
+  ngl::Vec3 eye=m_pointCloud.sphereCenter() ;
+  eye.m_z=cameraZ;
 
   auto minZ = bbox.min().m_z;
   auto cameraToFarEdge = ( minZ < 0 ) ? -minZ + cameraZ : cameraZ - minZ;
@@ -233,23 +231,21 @@ void NGLScene::paintGL()
 //    m_gridVAO->unbind();
 //  }
 
-//  if(m_showSphere)
-//  {
-//    shader->setUniform("Colour",0.0f,0.9f,0.0f,1.0f);
-//    ngl::Mat4 translate;
-//    translate.translate(m_boundingSphereCenter.m_x,
-//                        m_boundingSphereCenter.m_y,
-//                        m_boundingSphereCenter.m_z);
+  if(m_showSphere)
+  {
+    shader->setUniform("Colour",0.0f,0.9f,0.0f,1.0f);
+    ngl::Mat4 translate;
+    auto tx=m_pointCloud.sphereCenter();
+    translate.translate(tx.m_x,tx.m_y,tx.m_z);
 
-//    M=m_mouseGlobalTX*translate;
-//    MV=  m_view*M;
-//    MVP= m_project*MV;
-//    shader->setUniform("MVP",MVP);
+    M=m_mouseGlobalTX*translate;
+    MV=  m_view*M;
+    MVP= m_project*MV;
+    shader->setUniform("MVP",MVP);
 
-//    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-//    ngl::VAOPrimitives::instance()->draw("sphere");
-//    ngl::VAOPrimitives::instance()->draw("sphere1");
-//  }
+    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+    ngl::VAOPrimitives::instance()->draw("bsphere");
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------

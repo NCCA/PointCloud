@@ -1,6 +1,6 @@
 #include "NGLScene.h"
 #include <QMouseEvent>
-
+#include <QApplication>
 
 //----------------------------------------------------------------------------------------------------------------------
 void NGLScene::mouseMoveEvent( QMouseEvent* _event )
@@ -21,12 +21,16 @@ void NGLScene::mouseMoveEvent( QMouseEvent* _event )
   // right mouse translate code
   else if ( m_win.translate && _event->buttons() == Qt::RightButton )
   {
+    auto zoom=ZOOM;
+    if (QApplication::keyboardModifiers() == Qt::KeyboardModifier::AltModifier)
+      zoom+=10;
+
     int diffX      = static_cast<int>( _event->x() - m_win.origXPos );
     int diffY      = static_cast<int>( _event->y() - m_win.origYPos );
     m_win.origXPos = _event->x();
     m_win.origYPos = _event->y();
-    m_modelPos.m_x += INCREMENT * diffX;
-    m_modelPos.m_y -= INCREMENT * diffY;
+    m_modelPos.m_x += zoom * diffX;
+    m_modelPos.m_y -= zoom * diffY;
     update();
   }
 }
@@ -71,15 +75,17 @@ void NGLScene::mouseReleaseEvent( QMouseEvent* _event )
 //----------------------------------------------------------------------------------------------------------------------
 void NGLScene::wheelEvent( QWheelEvent* _event )
 {
-
+  auto zoom=ZOOM;
+  if (QApplication::keyboardModifiers() == Qt::KeyboardModifier::AltModifier)
+    zoom+=10;
   // check the diff of the wheel position (0 means no change)
   if ( _event->delta() > 0 )
   {
-    m_modelPos.m_z += ZOOM;
+    m_modelPos.m_z += zoom;
   }
   else if ( _event->delta() < 0 )
   {
-    m_modelPos.m_z -= ZOOM;
+    m_modelPos.m_z -= zoom;
   }
   update();
 }
