@@ -30,6 +30,8 @@ class PointCloud
     void normalize();
     // canonicalize (scale to fit in NDC / Canonical volume -1 -> +1 in all directions)
     void unitize();
+
+    bool writeObj(const std::string &_fname) const;
   private :
     std::vector<ngl::Vec3> m_points;
     BoundingBox m_bbox;

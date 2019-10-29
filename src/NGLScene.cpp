@@ -273,7 +273,7 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_Equal : m_pointSize++; break;
   case Qt::Key_Minus : m_pointSize--; break;
   //case Qt::Key_W : writePointCloud("debug.xyz"); break;
-
+  case Qt::Key_O : m_pointCloud.writeObj("test.obj"); break;
   default : break;
   }
   // finally update the GLWindow and re-draw

@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <fstream>
 #include <ngl/pystring.h>
+#include <ngl/Obj.h>
 #include <numeric>
 #include <unordered_set>
 #include <unordered_map>
@@ -273,7 +274,20 @@ void PointCloud::unitize()
 
 }
 
+bool PointCloud::writeObj(const std::string &_fname) const
+{
+  ngl::Obj pc;
+  uint32_t index=0;
+  for(auto v : m_points)
+  {
+    pc.addVertex(v);
+    ngl::Face f;
+    f.m_vert.push_back(index++);
+    pc.addFace(f);
+  }
+  return pc.save(_fname);
 
+}
 
 ngl::Real PointCloud::radius() const noexcept
 {
