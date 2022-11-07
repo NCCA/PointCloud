@@ -262,7 +262,7 @@ void PointCloud::normalize()
   auto delta = m_bbox.max() - m_bbox.min();
 
   ngl::Real max = 1.0f / std::max((delta.m_x), std::max((delta.m_y), (delta.m_z)));
-  ngl::Vec3 scale(max);
+  ngl::Vec3 scale(max, max, max);
   std::cout << "Delta " << delta << " max " << max << " scale " << scale << '\n';
   for (auto &p : m_points)
   {
@@ -281,8 +281,8 @@ void PointCloud::unitize()
   ngl::Real max = std::max(delta.m_x, std::max(delta.m_y, delta.m_z));
   std::cout.setf(std::ios::fixed, std::ios::floatfield);
   std::cout.setf(std::ios::showpoint);
-  ngl::Vec3 scale(1.0f / max);
-  // scale.clamp(0.001f,1.0f);
+  ngl::Real mscale = 1.0f / max;
+  ngl::Vec3 scale(mscale, mscale, mscale);
   std::cout << "Delta " << delta << " max " << max << " scale " << scale << '\n';
 
   for (auto &p : m_points)
